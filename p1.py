@@ -1,4 +1,3 @@
-from Tools.scripts.treesync import raw_input
 from p1_support import load_level, show_level, save_level_costs
 from math import inf, sqrt
 from heapq import heappop, heappush
