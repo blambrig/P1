@@ -54,6 +54,13 @@ def navigation_edges(level, cell):
              ((1,1), 1.4142135623730951),
              ... ]
     """
+	neighbors = []
+	for x in [-1, 0, 1]: '''for all elements in the rows'''
+	  for y in [-1, 0, 1]: '''for all elements in the columns'''
+	    neighbor = (cell[0]+x, cell[1]+y) '''get the surrounding cells into a tuple'''
+		if neighbor in level['spaces']: '''if not a wall then it's a valid cell'''
+		  neighbors.append(neighbor)
+	return neighbors
     pass
 
 
