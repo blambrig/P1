@@ -1,3 +1,4 @@
+from Tools.scripts.treesync import raw_input
 from p1_support import load_level, show_level, save_level_costs
 from math import inf, sqrt
 from heapq import heappop, heappush
@@ -37,7 +38,6 @@ def dijkstras_shortest_path_to_all(initial_position, graph, adj):
 
 
 def navigation_edges(level, cell):
-    #TODO Takes all adjacencies and costs
     """ Provides a list of adjacent cells and their respective costs from the given cell.
 
     Args:
@@ -54,14 +54,25 @@ def navigation_edges(level, cell):
              ((1,1), 1.4142135623730951),
              ... ]
     """
-	neighbors = []
-	for x in [-1, 0, 1]: '''for all elements in the rows'''
-	  for y in [-1, 0, 1]: '''for all elements in the columns'''
-	    neighbor = (cell[0]+x, cell[1]+y) '''get the surrounding cells into a tuple'''
-		if neighbor in level['spaces']: '''if not a wall then it's a valid cell'''
-		  neighbors.append(neighbor)
-	return neighbors
-    pass
+    neighbors = []
+    for x in range(-1, 2, 1):
+        for y in range(-1, 2, 1):
+            neighbor = (cell[0]+x, cell[1]+y)
+            if neighbor in level['spaces']:
+                if neighbor != cell:
+                    neighbors.append((neighbor, level['spaces'][neighbor]))
+
+    '''
+    DEBUG: Prints out neighbors and costs
+    if cell in level['spaces']:
+        print('Neighbors of (' + str(cell) + ': ' + str(level['spaces'][cell]) + '):\n' + str(neighbors) + '\n')
+    elif cell in level['walls']:
+        print('Neighbors of (' + str(cell) + ': X):\n' + str(neighbors) + '\n')
+    elif cell in level['waypoints']:
+        print('Neighbors of (' + str(cell) + ': POI):\n' + '):\n' + str(neighbors) + '\n')
+    '''
+
+    return neighbors
 
 
 def test_route(filename, src_waypoint, dst_waypoint):
