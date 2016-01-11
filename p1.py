@@ -71,6 +71,7 @@ def dijkstras_shortest_path(initial_position, destination, level, adj):
             path.append(curr)
             return path
         neighbors = navigation_edges(level, curr)
+        neighbors.sort(key=pq_sort)
 
         # Iterate while there are still neighboring cells in neighbors list
         while len(neighbors) != 0:
@@ -99,7 +100,35 @@ def dijkstras_shortest_path_to_all(initial_position, level, adj):
     Returns:
         A dictionary, mapping destination cells to the cost of a path from the initial_position.
     """
-    pass
+    # Create empty dicts and queue
+    dist = {}
+    prev = {}
+    queue = []
+
+    # Push source onto queue
+    heappush(queue, initial_position)
+    dist[initial_position] = 0
+
+    # Iterate while queue has elements, until destination is reached
+    while len(queue) != 0:
+        curr = heappop(queue)
+        neighbors = navigation_edges(level, curr)
+
+        # Iterate while there are still neighboring cells in neighbors list
+        while len(neighbors) != 0:
+            neighbor = neighbors.pop(0)
+            cost = dist[curr] + neighbor[1]
+
+            # If neighbor doesn't have dist, init, else compare to see if better cost
+            if neighbor[0] not in dist:
+                heappush(queue, neighbor[0])
+                dist[neighbor[0]] = cost
+                prev[neighbor[0]] = curr
+            else:
+                if cost < dist[neighbor[0]]:
+                    dist[neighbor[0]] = cost
+                    prev[neighbor[0]] = curr
+    return dist
 
 
 def navigation_edges(level, cell):
@@ -129,7 +158,7 @@ def navigation_edges(level, cell):
             if neighbor in level['spaces']:
                 if neighbor != cell:
                     neighbors.append((neighbor, path_cost_comp(level, cell, neighbor)))
-    neighbors.sort(key=pq_sort)
+    #neighbors.sort(key=pq_sort)
     return neighbors
 
 
@@ -191,4 +220,4 @@ if __name__ == '__main__':
     test_route(filename, src_waypoint, dst_waypoint)
 
     # Use this function to calculate the cost to all reachable cells from an origin point.
-    #TODO cost_to_all_cells(filename, src_waypoint, 'my_costs.csv')
+    cost_to_all_cells(filename, src_waypoint, 'my_costs.csv')
