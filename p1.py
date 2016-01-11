@@ -3,22 +3,37 @@ from math import inf, sqrt
 from heapq import heappop, heappush
 
 def path_cost_comp(level, cellA, cellB):
+    """ Computes the cost between cells
+
+    Args:
+        level: loaded level
+        cellA: starting point
+        cellB: ending point
+
+    Returns:
+        float of distance between cellA and cellB
+
+    """
     if abs(cellA[0]-cellB[0]) == 1 and abs(cellA[1]-cellB[1]) == 1:
         distA = ((0.5 * sqrt(2)) * level['spaces'][cellA])
-        # print('Distance in ' + str(cellA) + ' is ' + str(distA))
         distB = ((0.5 * sqrt(2)) * level['spaces'][cellB])
-        # print('Distance in ' + str(cellB) + ' is ' + str(distB))
         dist = distA + distB
     else:
         distA = (0.5 * level['spaces'][cellA])
-        # print('Distance in ' + str(cellA) + ' is ' + str(distA))
         distB = (0.5 * level['spaces'][cellB])
-        # print('Distance in ' + str(cellB) + ' is ' + str(distB))
         dist = distA + distB
-    #print('Computed dist between ' + str(cellA) + ' and ' + str(cellB) + ' is: ' + str(dist))
     return dist
 
 def pq_sort(cell):
+    """ Function to parse keys from tuples to sort queue
+
+    Args:
+        cell: tuple with distance as second element
+
+    Returns:
+        distance in tuple for sorting purposes
+
+    """
     return cell[1]
 
 def dijkstras_shortest_path(initial_position, destination, level, adj):
@@ -35,35 +50,38 @@ def dijkstras_shortest_path(initial_position, destination, level, adj):
         Otherwise, return None.
 
     """
+
+    # Create empty dicts and queue
     dist = {}
     prev = {}
     queue = []
-    #print(str(initial_position))
+
+    # Push source onto queue
     heappush(queue, initial_position)
     dist[initial_position] = 0
-    counter = 0
+
+    # Iterate while queue has elements, until destination is reached
     while len(queue) != 0:
         curr = heappop(queue)
         if curr == destination:
-            #print('Destination reached!')
             path = []
             while curr != initial_position:
                 path.append(curr)
                 curr = prev[curr]
             path.append(curr)
             return path
-        #print('curr = ' + str(curr))
         neighbors = navigation_edges(level, curr)
+
+        # Iterate while there are still neighboring cells in neighbors list
         while len(neighbors) != 0:
             neighbor = neighbors.pop(0)
             cost = dist[curr] + neighbor[1]
+
+            # If neighbor doesn't have dist, init, else compare to see if better cost
             if neighbor[0] not in dist:
                 heappush(queue, neighbor[0])
                 dist[neighbor[0]] = cost
                 prev[neighbor[0]] = curr
-                #print(str(neighbor) + ' pushed onto queue')
-                #print(str(curr) + ' is now parent of ' + str(neighbor))
-                #print('Current queue: ' + str(queue))
             else:
                 if cost < dist[neighbor[0]]:
                     dist[neighbor[0]] = cost
@@ -101,25 +119,17 @@ def navigation_edges(level, cell):
              ((1,1), 1.4142135623730951),
              ... ]
     """
+
     neighbors = []
+
+    # Iterates in 8-way movement about center
     for x in range(-1, 2, 1):
         for y in range(-1, 2, 1):
             neighbor = (cell[0]+x, cell[1]+y)
             if neighbor in level['spaces']:
                 if neighbor != cell:
                     neighbors.append((neighbor, path_cost_comp(level, cell, neighbor)))
-
-    '''
-    #DEBUG: Prints out neighbors and costs
-    if cell in level['spaces']:
-        print('Neighbors of (' + str(cell) + ': ' + str(level['spaces'][cell]) + '):\n' + str(neighbors) + '\n')
-    elif cell in level['walls']:
-        print('Neighbors of (' + str(cell) + ': X):\n' + str(neighbors) + '\n')
-    elif cell in level['waypoints']:
-        print('Neighbors of (' + str(cell) + ': POI):\n' + '):\n' + str(neighbors) + '\n')
-    #'''
     neighbors.sort(key=pq_sort)
-    #print('Sorted neighbors: ' + str(neighbors))
     return neighbors
 
 
@@ -145,6 +155,7 @@ def test_route(filename, src_waypoint, dst_waypoint):
     # Search for and display the path from src to dst.
     path = dijkstras_shortest_path(src, dst, level, navigation_edges)
     if path:
+        print("Path from " + src_waypoint + " to " + dst_waypoint + " found\n")
         show_level(level, path)
     else:
         print("No path possible!")
