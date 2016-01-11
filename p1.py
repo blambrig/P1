@@ -2,9 +2,26 @@ from p1_support import load_level, show_level, save_level_costs
 from math import inf, sqrt
 from heapq import heappop, heappush
 
+def path_cost_comp(level, cellA, cellB):
+    if abs(cellA[0]-cellB[0]) == 1 and abs(cellA[1]-cellB[1]) == 1:
+        distA = ((0.5 * sqrt(2)) * level['spaces'][cellA])
+        # print('Distance in ' + str(cellA) + ' is ' + str(distA))
+        distB = ((0.5 * sqrt(2)) * level['spaces'][cellB])
+        # print('Distance in ' + str(cellB) + ' is ' + str(distB))
+        dist = distA + distB
+    else:
+        distA = (0.5 * level['spaces'][cellA])
+        # print('Distance in ' + str(cellA) + ' is ' + str(distA))
+        distB = (0.5 * level['spaces'][cellB])
+        # print('Distance in ' + str(cellB) + ' is ' + str(distB))
+        dist = distA + distB
+    #print('Computed dist between ' + str(cellA) + ' and ' + str(cellB) + ' is: ' + str(dist))
+    return dist
 
-def dijkstras_shortest_path(initial_position, destination, graph, adj):
-    #TODO Uses DSPTA to find shortest path
+def pq_sort(cell):
+    return cell[1]
+
+def dijkstras_shortest_path(initial_position, destination, level, adj):
     """ Searches for a minimal cost path through a graph using Dijkstra's algorithm.
 
     Args:
@@ -18,10 +35,41 @@ def dijkstras_shortest_path(initial_position, destination, graph, adj):
         Otherwise, return None.
 
     """
-    pass
+    dist = {}
+    prev = {}
+    queue = []
+    #print(str(initial_position))
+    heappush(queue, initial_position)
+    dist[initial_position] = 0
+    counter = 0
+    while len(queue) != 0:
+        curr = heappop(queue)
+        if curr == destination:
+            #print('Destination reached!')
+            path = []
+            while curr != initial_position:
+                path.append(curr)
+                curr = prev[curr]
+            path.append(curr)
+            return path
+        #print('curr = ' + str(curr))
+        neighbors = navigation_edges(level, curr)
+        while len(neighbors) != 0:
+            neighbor = neighbors.pop(0)
+            cost = dist[curr] + neighbor[1]
+            if neighbor[0] not in dist:
+                heappush(queue, neighbor[0])
+                dist[neighbor[0]] = cost
+                prev[neighbor[0]] = curr
+                #print(str(neighbor) + ' pushed onto queue')
+                #print(str(curr) + ' is now parent of ' + str(neighbor))
+                #print('Current queue: ' + str(queue))
+            else:
+                if cost < dist[neighbor[0]]:
+                    dist[neighbor[0]] = cost
+                    prev[neighbor[0]] = curr
 
-
-def dijkstras_shortest_path_to_all(initial_position, graph, adj):
+def dijkstras_shortest_path_to_all(initial_position, level, adj):
     #TODO Dijkstras min cost to every cell in graph from initial_position
     """ Calculates the minimum cost to every reachable cell in a graph from the initial_position.
 
@@ -59,18 +107,19 @@ def navigation_edges(level, cell):
             neighbor = (cell[0]+x, cell[1]+y)
             if neighbor in level['spaces']:
                 if neighbor != cell:
-                    neighbors.append((neighbor, level['spaces'][neighbor]))
+                    neighbors.append((neighbor, path_cost_comp(level, cell, neighbor)))
 
     '''
-    DEBUG: Prints out neighbors and costs
+    #DEBUG: Prints out neighbors and costs
     if cell in level['spaces']:
         print('Neighbors of (' + str(cell) + ': ' + str(level['spaces'][cell]) + '):\n' + str(neighbors) + '\n')
     elif cell in level['walls']:
         print('Neighbors of (' + str(cell) + ': X):\n' + str(neighbors) + '\n')
     elif cell in level['waypoints']:
         print('Neighbors of (' + str(cell) + ': POI):\n' + '):\n' + str(neighbors) + '\n')
-    '''
-
+    #'''
+    neighbors.sort(key=pq_sort)
+    #print('Sorted neighbors: ' + str(neighbors))
     return neighbors
 
 
@@ -87,6 +136,7 @@ def test_route(filename, src_waypoint, dst_waypoint):
     # Load and display the level.
     level = load_level(filename)
     show_level(level)
+
 
     # Retrieve the source and destination coordinates from the level.
     src = level['waypoints'][src_waypoint]
