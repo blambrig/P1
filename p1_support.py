@@ -74,7 +74,9 @@ def show_level(level, path=[]):
                 chars.append(' ')
 
         chars.append('\n')
-
+    if path:
+        output = open('test_maze_path.txt', 'w')
+        output.write(''.join(chars))
     print(''.join(chars))
 
 
